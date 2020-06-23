@@ -1,2 +1,2 @@
 # readSM4
-Python method to open and read RHK .SM4 data file format.
+Python module to open, read, and work with RHK .SM4 data file format.
