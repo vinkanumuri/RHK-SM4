@@ -234,6 +234,11 @@ class RHKsm4:
         # Seek the file to the given position
         self._file.seek(offset, whence)
 
+    def info(self):
+        # Provide summary of .sm4 file attributes
+        for i in range(self.page_count):
+            print("Page", i, ":", self[i].attrs)
+
 
 class RHKObject:
     '''
@@ -581,17 +586,15 @@ class RHKPage(RHKObjectContainer):
         # Add signature from File Header
         self.attrs['Signature'] = sm4._header.signature
 
-    def _read(self):
-        '''
-        Read the Page Header and Page Data
-        Thumbnail and Thumbnail Header are discarded
-        '''
 
-        ## Read Page Header
+    def _read(self):
+        # Read the Page Header and Page Data. Thumbnail and Thumbnail Header are discarded
+
+        # Read Page Header
         self._header = RHKPageHeader(self, self._sm4)
         self._header.read_objects(self)
 
-        ## Read Page Data
+        # Read Page Data
         self._read_data()
 
     def _read_data(self):
@@ -661,18 +664,13 @@ class RHKPage(RHKObjectContainer):
                 data = tmp[1:]
 
         else:
-
             data = raw_data
             coords = [('x', np.arange(xsize * ysize, dtype=np.uint32))]
 
         return data, coords
 
     def _read_StringData(self):
-        '''
-        Read String Data for the current page.
-        _string_count gives the number of strings in the current page.
-        '''
-
+        # Read String Data for the current page. _string_count gives the number of strings in the current page.
         offset = self._header._get_offset('OBJECT_STRING_DATA')
         self._sm4._seek(offset, 0)
 
@@ -1174,18 +1172,12 @@ def sm4_to_dataset(sm4file, scaling=True):
 '''
 def sm4_to_nexus(sm4file, filename=None, **kwargs):
 
-    # This method convert an RHK .sm4 file into a NeXus file.
-    # The nxarray package is required.
-    # 
+    # This method convert an RHK .sm4 file into a NeXus file (nxarray package is required).
     # Args:
     #     sm4file: the name of the .sm4 file to be converted
-    #     filename: (optional) path of the NeXus file to be saved.
-    #         If not provided, a NeXus file is saved in the same folder
-    #         of the .sm4 file.
+    #     filename: (optional) path of the NeXus file to be saved. If not provided, file saved in same folder as sm4.
     #     **kwargs: any optional argument accepted by nexus NXdata.save() method
-    # 
-    # Returns:
-    #     nothing
+    # Returns nothing.
 
     try:
         import nxarray as nxr
