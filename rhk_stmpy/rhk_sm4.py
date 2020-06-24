@@ -236,8 +236,14 @@ class RHKsm4:
 
     def info(self):
         # Provide summary of .sm4 file attributes
+        info = []
         for i in range(self.page_count):
-            print("Page", i, ":", self[i].attrs)
+            pgnum = 'Page ' + str(i)
+            info.append([pgnum, self[i].attrs['PageDataTypeName'], self[i].attrs['PageSourceTypeName'],
+                         self[i].attrs['PageTypeName'], self[i].attrs['LineTypeName'],
+                         self[i].attrs['ImageTypeName'], self[i].attrs['ScanTypeName']])
+        return info
+
 
 
 class RHKObject:
@@ -1140,19 +1146,17 @@ def load_sm4(sm4file):
     '''
     return RHKsm4(sm4file)
 
-
+'''
 def sm4_to_dataset(sm4file, scaling=True):
-    '''
-    This method load an RHK .sm4 file into an xarray Dataset (xarray package is required)
-    Args:
-        sm4file: the name of the .sm4 file to be loaded
-        scaling: if True convert data to physical units (default), if False keep data in ADC units
-    Returns an xarray Dataset
-    Examples:
-        ds = rhksm4.to_dataset('/path/to/file.sm4')
-        ds <xarray.Dataset>
-        ds.IDxxxxx <xarray.DataArray>
-    '''
+    # This method load an RHK .sm4 file into an xarray Dataset (xarray package is required)
+    # Args:
+    #     sm4file: the name of the .sm4 file to be loaded
+    #     scaling: if True convert data to physical units (default), if False keep data in ADC units
+    # Returns an xarray Dataset
+    # Examples:
+    #     ds = rhksm4.to_dataset('/path/to/file.sm4')
+    #     ds <xarray.Dataset>
+    #     ds.IDxxxxx <xarray.DataArray>
 
     try:
         import xarray as xr
@@ -1169,7 +1173,6 @@ def sm4_to_dataset(sm4file, scaling=True):
     return ds
 
 
-'''
 def sm4_to_nexus(sm4file, filename=None, **kwargs):
 
     # This method convert an RHK .sm4 file into a NeXus file (nxarray package is required).
