@@ -12,7 +12,7 @@ summary = f.info()
 # accessing page data as numpy array and page attributes as a dictionary
 pg = f[4]
 attrs = pg.attrs
-print(attrs)  # p
+#print(attrs)  # printing attributes
 data = pg.data
 
 # plotting data
