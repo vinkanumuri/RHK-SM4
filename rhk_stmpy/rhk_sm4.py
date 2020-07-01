@@ -1,12 +1,22 @@
 '''
 Class to represent the RHK technology Inc. SM4 file and all attributes and methods to read the binary data
-Examples:
-        f = rhk.load_sm4('/path/to/file.sm4') # load the file
-        pg0 = f[0] # assigns first page in the file
-        pg0.name # returns page name
-        pg0.coords[1][1]  # returns ramping values
-        pg0.data # returns page data as a numpy array
-        pg0.attrs # returns page metadata as a dictionary
+
+# Using this module:
+import rhk_stmpy.rhk_sm4 as rhk  # Importing the rhk_sm4 module
+
+# initializing
+f = rhk.load_sm4("test_files/example.sm4")  # Loading .sm4 file
+pg = f[6]  # assigning 7th page of .sm4 file
+
+# metadata
+pg_count = f.page_count  # number of pages as int
+sum = f.info()  # summary of sm4 file pages as pandas data frame
+attrs = pg.attrs  # page/data attributes as a dictionary
+
+# data
+coords = pg.coords
+ramp = coords[1][1]  # x-axis ramping values as numpy array
+data = pg.data  # data as numpy array
 '''
 
 import numpy as np
@@ -239,7 +249,7 @@ class RHKsm4:
         # Seek the file to the given position
         self._file.seek(offset, whence)
 
-    def info(self):
+    def print_info(self):
         # Provide summary of .sm4 file attributes (pandas required)
         try:
             # importing pandas and setting max rows/columns to display
@@ -260,6 +270,7 @@ class RHKsm4:
                          self[i].attrs['Bias'], self[i].attrs['Current']])
         table = pd.DataFrame(info, columns=["PageDataType", "PageSourceType", "PageType", "LineType", "ImageType",
                                             "ScanType", "XSize", "YSize", "Bias", "Current"])
+        print(table)  # remove to stop autoprint
         return table
 
 
