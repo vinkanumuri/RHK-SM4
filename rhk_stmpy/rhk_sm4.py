@@ -1,6 +1,12 @@
 '''
-Class to represent the RHK technology Inc. SM4 file
-All necessary attributes and methods to read the binary data
+Class to represent the RHK technology Inc. SM4 file and all attributes and methods to read the binary data
+Examples:
+        f = rhk.load_sm4('/path/to/file.sm4') # load the file
+        pg0 = f[0] # assigns first page in the file
+        pg0.name # returns page name
+        pg0.coords[1][1]  # returns ramping values
+        pg0.data # returns page data as a numpy array
+        pg0.attrs # returns page metadata as a dictionary
 '''
 
 import numpy as np
@@ -196,7 +202,6 @@ class RHKsm4:
             page._read()
         # Close the file
         self._file.close()
-
         return
 
     def __getitem__(self, index):
@@ -235,14 +240,27 @@ class RHKsm4:
         self._file.seek(offset, whence)
 
     def info(self):
-        # Provide summary of .sm4 file attributes
+        # Provide summary of .sm4 file attributes (pandas required)
+        try:
+            # importing pandas and setting max rows/columns to display
+            import pandas as pd
+            pd.set_option('display.max_rows', 15)
+            pd.set_option('display.max_columns', 10)
+        except:
+            print("Error: pandas package not found.")
+            return
+
+
         info = []
         for i in range(self.page_count):
-            pgnum = 'Page ' + str(i)
-            info.append([pgnum, self[i].attrs['PageDataTypeName'], self[i].attrs['PageSourceTypeName'],
+            info.append([self[i].attrs['PageDataTypeName'], self[i].attrs['PageSourceTypeName'],
                          self[i].attrs['PageTypeName'], self[i].attrs['LineTypeName'],
-                         self[i].attrs['ImageTypeName'], self[i].attrs['ScanTypeName']])
-        return info
+                         self[i].attrs['ImageTypeName'], self[i].attrs['ScanTypeName'],
+                         self[i].attrs['Xsize'], self[i].attrs['Ysize'],
+                         self[i].attrs['Bias'], self[i].attrs['Current']])
+        table = pd.DataFrame(info, columns=["PageDataType", "PageSourceType", "PageType", "LineType", "ImageType",
+                                            "ScanType", "XSize", "YSize", "Bias", "Current"])
+        return table
 
 
 
@@ -659,7 +677,7 @@ class RHKPage(RHKObjectContainer):
                 coords[0] = ('y', -np.flip(coords[0][1]))
 
         elif self._page_data_type == 1:  # Line type
-            data = raw_data.reshape(ysize, xsize)  #raw_data.reshape(xsize, ysize).transpose()
+            data = raw_data.reshape(ysize, xsize)  # raw_data.reshape(xsize, ysize).transpose()
             xoffset = self.attrs['Xoffset']
             coords = [('y', int(yscale) * np.arange(ysize, dtype=np.uint32)),
                       ('x', xscale * np.arange(xsize, dtype=np.float64) + xoffset)]
@@ -1134,126 +1152,9 @@ class RHKPage(RHKObjectContainer):
 
 def load_sm4(sm4file):
     '''
-    This method load data and metadata from an RHK .sm4 file.
+    To load data and metadata from RHK .sm4 file.
     Args: sm4file (name of the .sm4 file to be loaded)
     Returns a container for the pages in the .sm4 file with their data and metadata
-    Examples:
-        f = rhk.load_sm4('/path/to/file.sm4') # load the file
-        p0 = f[0] # assign first page in the file
-        p0.name # returns page name
-        p0.data # returns page data as a numpy array
-        p0.attrs # returns page metadata as a dictionary
     '''
     return RHKsm4(sm4file)
 
-'''
-def sm4_to_dataset(sm4file, scaling=True):
-    # This method load an RHK .sm4 file into an xarray Dataset (xarray package is required)
-    # Args:
-    #     sm4file: the name of the .sm4 file to be loaded
-    #     scaling: if True convert data to physical units (default), if False keep data in ADC units
-    # Returns an xarray Dataset
-    # Examples:
-    #     ds = rhksm4.to_dataset('/path/to/file.sm4')
-    #     ds <xarray.Dataset>
-    #     ds.IDxxxxx <xarray.DataArray>
-
-    try:
-        import xarray as xr
-    except:
-        print("Error: xarray package not found.")
-        return
-
-    f = load_sm4(sm4file)
-
-    ds = xr.Dataset()
-    for p in f:
-        ds[p.name] = to_datarr(p, scaling=scaling)
-
-    return ds
-
-
-def sm4_to_nexus(sm4file, filename=None, **kwargs):
-
-    # This method convert an RHK .sm4 file into a NeXus file (nxarray package is required).
-    # Args:
-    #     sm4file: the name of the .sm4 file to be converted
-    #     filename: (optional) path of the NeXus file to be saved. If not provided, file saved in same folder as sm4.
-    #     **kwargs: any optional argument accepted by nexus NXdata.save() method
-    # Returns nothing.
-
-    try:
-        import nxarray as nxr
-    except:
-        print("Error: nxarray package not found.")
-        return
-
-    if not filename:
-        import os
-        filename = os.path.splitext(sm4file)[0]
-
-    ds = sm4_to_dataset(sm4file, scaling=False)
-    ds.nxr.save(filename, **kwargs)
-
-def to_datarr(p, scaling):
-    # Create an xarray DataArray from an RHKPage
-
-    import xarray as xr
-
-    # Create DataArray
-    dr = xr.DataArray(p.data,
-                      coords=p.coords,
-                      attrs=p.attrs,
-                      name=p.name)
-
-    # Set attributes
-    if dr.attrs['Label'] != '':
-        dr.attrs['long_name'] = dr.attrs['Label']
-    dr.attrs['units'] = dr.attrs['Zunits']
-
-    dr.coords['x'].attrs['units'] = dr.attrs['Xunits']
-
-    try:
-        dr.coords['y'].attrs['units'] = dr.attrs['Yunits']
-    except KeyError:
-        pass
-
-    # Set additional nexus format attributes
-    dr.attrs['scaling_factor'] = dr.attrs['Zscale']
-    dr.attrs['offset'] = dr.attrs['Zoffset']
-    dr.attrs['start_time'] = dr.attrs['DateTime']
-    dr.attrs['notes'] = dr.attrs['UserText']
-
-    # Set additional NXstm nexus format attributes
-    dr.attrs['bias'] = dr.attrs['Bias']
-    dr.attrs['bias_units'] = 'V'
-    dr.attrs['setpoint'] = dr.attrs['ZPI_SetPoint']
-    dr.attrs['setpoint_units'] = dr.attrs['ZPI_SetPointUnit']
-    dr.attrs['scan_angle'] = dr.attrs['Angle']
-    if dr.attrs['ZPI_FeedbackType'] == 'Off':
-        dr.attrs['feedback_active'] = False
-    else:
-        dr.attrs['feedback_active'] = True
-    dr.attrs['feedback_pgain'] = dr.attrs['ZPI_ProportionalGain']
-    dr.attrs['time_per_point'] = dr.attrs['Period']
-
-    dr.coords['x'].attrs['offset'] = dr.attrs['Xoffset']
-    if dr.attrs['Xlabel'] == '':
-        dr.coords['x'].attrs['long_name'] = 'x'
-    else:
-        dr.coords['x'].attrs['long_name'] = dr.attrs['Xlabel']
-
-    try:
-        dr.coords['y'].attrs['offset'] = dr.attrs['Yoffset']
-        dr.coords['y'].attrs['long_name'] = 'y'
-    except KeyError:
-        pass
-
-    # Scale data to physical units
-    if scaling:
-        dr.data = dr.data.astype(float) * dr.attrs['scaling_factor'] + dr.attrs['offset']
-        dr.attrs['scaling_factor'] = 1.0
-        dr.attrs['offset'] = 0.0
-
-    return dr
-'''

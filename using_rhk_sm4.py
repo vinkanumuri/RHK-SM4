@@ -1,22 +1,23 @@
-# Importing the rhk_sm4 module and other packages.
-import rhk_stmpy.rhk_sm4 as rhk
-import matplotlib.pyplot as plt
+import rhk_stmpy.rhk_sm4 as rhk  # Importing the rhk_sm4 module
 
-f = rhk.load_sm4("test_files/2020-06-03_010_V_map1_0001_alyson.sm4")  # Loading .sm4 file .
-pg = f[6]
+# initializing
+f = rhk.load_sm4("test_files/2020-06-03_010_V_map1_0001_alyson.sm4")  # Loading .sm4 file
+pg = f[6]  # assigning 7th page of .sm4 file
 
-# printing summary of sm4 file pages or number of pages
-# summary = f.info()
-# print(summary)
-# print(f.page_count)
+# metadata
+pg_count = f.page_count  # number of pages as int
+sum = f.info()  # summary of sm4 file pages as pandas dataframe
+attrs = pg.attrs  # page/data attributes as a dictionary
 
-# accessing page data as numpy array and page attributes as a dictionary
-attrs = pg.attrs
-coords = pg.coords[1][1]
-data = pg.data
+# data
+coords = pg.coords
+ramp = coords[1][1]  # x-axis ramping values as numpy array
+data = pg.data  # data as numpy array
 
-print(coords)
-print(data)
+# print(sum)
+# print(attrs)
+# print(ramp)
+# print(data)
 
 
 
