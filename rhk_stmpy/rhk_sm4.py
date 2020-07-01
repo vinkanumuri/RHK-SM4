@@ -612,6 +612,7 @@ class RHKPage(RHKObjectContainer):
 
         # Load data, selecting float or long integer type
         data_size = int(self._page_data_size / 4)
+
         if (self._line_type in [1, 6, 9, 10, 11, 13, 18, 19, 21, 22] or self._page_data_type == 6):
             raw_data = np.fromfile(self._sm4._file, dtype=np.float32, count=data_size)
             '''
@@ -619,8 +620,9 @@ class RHKPage(RHKObjectContainer):
             Where m is the Param count and n is the Data length (array size) stored in the page header. 
             The first float data in each element represents the output values.
             '''
-        else:
-            raw_data = np.fromfile(self._sm4._file, dtype=np.int32, count=data_size)
+        else: ###
+            raw_data = np.fromfile(self._sm4._file, dtype=np.int32, count=data_size) ###
+            raw_data = np.float32(raw_data) * self.attrs['Zscale'] + self.attrs['Zoffset']
 
         # Reshape and store data
         self.data, self.coords = self._reshape_data(raw_data)
@@ -657,9 +659,7 @@ class RHKPage(RHKObjectContainer):
                 coords[0] = ('y', -np.flip(coords[0][1]))
 
         elif self._page_data_type == 1:  # Line type
-
-            data = raw_data.reshape(xsize, ysize).transpose()
-
+            data = raw_data.reshape(ysize, xsize)  #raw_data.reshape(xsize, ysize).transpose()
             xoffset = self.attrs['Xoffset']
             coords = [('y', int(yscale) * np.arange(ysize, dtype=np.uint32)),
                       ('x', xscale * np.arange(xsize, dtype=np.float64) + xoffset)]
@@ -1130,7 +1130,7 @@ class RHKPage(RHKObjectContainer):
         self.attrs[metaString + '_CutoffFrequencyUnits'] = units
 
 
-# Methods: load_sm4, sm4_to_dataset
+# Methods: load_sm4
 
 def load_sm4(sm4file):
     '''
@@ -1194,8 +1194,6 @@ def sm4_to_nexus(sm4file, filename=None, **kwargs):
 
     ds = sm4_to_dataset(sm4file, scaling=False)
     ds.nxr.save(filename, **kwargs)
-'''
-
 
 def to_datarr(p, scaling):
     # Create an xarray DataArray from an RHKPage
@@ -1258,3 +1256,4 @@ def to_datarr(p, scaling):
         dr.attrs['offset'] = 0.0
 
     return dr
+'''
