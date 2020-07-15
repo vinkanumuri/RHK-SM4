@@ -1,4 +1,4 @@
-It would be helpful if all participants import stmpy in a jupyter notebook at some point, as our read_sm4 are already integrated to stmpy, and it would be helpful to access a lot of useful features that developed over the past few years in our lab.
+It would be helpful if all participants import stmpy in a jupyter notebook at some point, as our read_sm4 function is already integrated to stmpy, and it would be helpful to access a lot of useful features that developed in our lab over the past few years .
 To install the package, you will need to follow these steps. 
 
 How to install stmpy:
