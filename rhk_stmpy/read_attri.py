@@ -59,7 +59,7 @@ def loadsm4(filePath):
         2020-07-15  - WT : Initial commit.
       
     '''
-    import stmpy.read_rhk_sm4 as sm4
+    import rhk_stmpy.rhk_sm4 as sm4
     f = sm4.load_sm4(filePath)
     self = Spy()
     self.info = {}
