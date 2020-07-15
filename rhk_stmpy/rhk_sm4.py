@@ -34,7 +34,7 @@ class object_type(Enum):
     OBJECT_IMAGE_DRIFT = 6
     OBJECT_SPEC_DRIFT_HEADER = 7
     OBJECT_SPEC_DRIFT_DATA = 8
-    OBJECT_COLOR_INFO = 9
+    OBJECT_COLOR_= 9
     OBJECT_STRING_DATA = 10
     OBJECT_TIP_TRACK_HEADER = 11
     OBJECT_TIP_TRACK_DATA = 12
@@ -263,14 +263,13 @@ class RHKsm4:
 
         info = []
         for i in range(self.page_count):
-            info.append([self[i].attrs['PageDataTypeName'], self[i].attrs['PageSourceTypeName'],
+            info.append([self[i].attrs['Label'],self[i].attrs['PageDataTypeName'], self[i].attrs['PageSourceTypeName'],
                          self[i].attrs['PageTypeName'], self[i].attrs['LineTypeName'],
-                         self[i].attrs['ImageTypeName'], self[i].attrs['ScanTypeName'],
-                         self[i].attrs['Xsize'], self[i].attrs['Ysize'],
-                         self[i].attrs['Bias'], self[i].attrs['Current']])
-        table = pd.DataFrame(info, columns=["PageDataType", "PageSourceType", "PageType", "LineType", "ImageType",
-                                            "ScanType", "XSize", "YSize", "Bias", "Current"])
-        print(table)  # remove to stop autoprint
+                         self[i].attrs['ImageTypeName'], self[i].attrs['Xsize'],
+                         self[i].attrs['Ysize'], self[i].attrs['Bias'],
+                         self[i].attrs['Current']])
+        table = pd.DataFrame(info, columns=["Label", "PageDataType", "PageSourceType", "PageType", "LineType", "ImageType", "XSize",                                                  "YSize", "Bias", "Current"])
+        #print(table)  # remove to stop autoprint
         return table
 
 
