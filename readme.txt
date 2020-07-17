@@ -10,5 +10,5 @@ Launch Anaconda, then launch the command terminal (called something like CMD.exe
 Type dir on windows or ls on mac to reveal the folder contents. You should see a file called setup.py
 Within the command prompt run: python setup.py develop
 In the Anaconda main window, launch a jupyter notebook. In the first cell type %pylab inline and execute the cell. In the second cell type import stmpy and execute.
-Once you installed the stmpy package, all you need to do is by first type in "import stmpy" at the top. And then to call your data by typing stmpy.load('xxx.sm4').
+To call your data you just need to type in stmpy.load('xxx.sm4').
 Please email me if you have any difficulties with a screenshot of your error message.
